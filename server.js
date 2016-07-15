@@ -13,9 +13,18 @@ app.get('/', function (req, res) {
 	res.send('Todo API Root');
 });
 
-// GET /todos
+// GET /todos?completed=true
 app.get('/todos', function (req, res) {
-	res.json(todos);
+	var queryParams = req.query;
+	var filteredTodos = todos;
+
+	if (queryParams.hasOwnProperty('completed') && queryParams.completed === 'true') {
+		filteredTodos = _.where(filteredTodos, {completed: true});
+	} else if (queryParams.hasOwnProperty('completed') && queryParams.completed === 'false') {
+		filteredTodos = _.where(filteredTodos, {completed: false});
+	}
+
+	res.json(filteredTodos);
 });
 
 // GET /todos/:id
@@ -33,42 +42,32 @@ app.get('/todos/:id', function (req, res) {
 // POST /todos
 app.post('/todos', function (req, res) {
 	var body = _.pick(req.body, 'description', 'completed');
-	//_.pick to pick description and completed
 
 	if (!_.isBoolean(body.completed) || !_.isString(body.description) || body.description.trim().length === 0) {
 		return res.status(400).send();
 	}
 
-	// Set body.description to be trimmed value
-	body.description = body.description.trim();
-
-	// add id field
+	body.description = body.description.trim();	
 	body.id = todoNextId++;
 
-	// push body into array
 	todos.push(body);
 	
 	res.json(body);
 });
 
-
-// http-method DELETE
-app.delete('/todos/:id', function(req,res){
+// DELETE /todos/:id
+app.delete('/todos/:id', function (req, res) {
 	var todoId = parseInt(req.params.id, 10);
 	var matchedTodo = _.findWhere(todos, {id: todoId});
 
-	if(!matchedTodo){
-		res.status(404).json({"error":"no todo found with that id"});
-	}
-	else
-	{
+	if (!matchedTodo) {
+		res.status(404).json({"error": "no todo found with that id"});
+	} else {
 		todos = _.without(todos, matchedTodo);
 		res.json(matchedTodo);
 	}
-
 });
 
-// Update PUT-http-method
 // PUT /todos/:id
 app.put('/todos/:id', function (req, res) {
 	var todoId = parseInt(req.params.id, 10);
@@ -97,7 +96,5 @@ app.put('/todos/:id', function (req, res) {
 });
 
 app.listen(PORT, function () {
-	console.log('Express Webserver is listening on port ' + PORT + '!');
+	console.log('Express listening on port ' + PORT + '!');
 });
-
-

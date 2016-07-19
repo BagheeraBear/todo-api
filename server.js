@@ -24,6 +24,8 @@ app.get('/todos', function (req, res) {
 		filteredTodos = _.where(filteredTodos, {completed: false});
 	}
 
+	//indexOf
+
 	res.json(filteredTodos);
 });
 
